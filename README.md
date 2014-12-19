@@ -7,18 +7,22 @@ Simple app that reports the depth of a Celery redis queue to Librato Metrics onc
 
 First set the relevant environmental variables:
 
+```
 $ export LIBRATO_TOKEN=<token>
 $ export LIBRATO_USER=<user>
 $ export REDIS_URI=redis://name:password@server.com:19928
 $ export METRIC_NAME=celery_depth
 $ export QUEUE_NAME=celery
+```
 
-```sh
+And run:
+
+```
 $ git clone https://github.com/epantry/epmon.git
 $ cd epmon
 $ lein repl
-user=> (require 'epmon.web)
-user=> (def server (epmon.web/-main))
+  user=> (require 'epmon.web)
+  user=> (def server (epmon.web/-main))
 ```
 
 Visiting [localhost:5000](http://localhost:5000/) will simply yield a 404 but you can see the queue length logged on the commandline every minute.
