@@ -10,32 +10,34 @@
             [taoensso.carmine :as car :refer (wcar)]
             [epmon.librato :as librato]))
 
-(def redis-uri
-  (env :rediscloud-url))
+; Environmental variables
+(def redis-uri (env :redis-uri))
+(def librato-user (env :librato-user))
+(def librato-token (env :librato-token))
+(def queue-name (env :queue-name))
+(def metric-name (env :metric-name))
 
-(def librato-user
-  (env :librato-user))
-
-(def librato-token
-  (env :librato-token))
-
+; Redis setup
 (def redis-conn {:pool {}
                  :spec {:uri redis-uri}})
-
 (defmacro wcar* [& body] `(car/wcar redis-conn ~@body))
 
+; Get the queue length and log it to Librato as a gauge
 (defn log-redis []
-  (let [qlen (wcar* (car/llen "celery"))]
+  (let [qlen (wcar* (car/llen queue-name))]
+    (log/info (str "Sending " qlen))
     (librato/collate librato-user
                      librato-token
-                     [{:name "celery_depth" :value qlen }] [])))
+                     [{:name metric-name :value qlen }] [])))
 
+; Return a 404 if anyone comes to the web app
 (defroutes app
   (ANY "*" []
        (route/not-found (slurp (io/resource "404.html")))))
 
 (defn -main [& [port]]
-  (def my-running-scheduler
+  ; Launch the periodic task
+  (def running-scheduler
     (call-every-minute log-redis))
   (let [port (Integer. (or port (env :port) 5000))]
     (jetty/run-jetty (site #'app) {:port port :join? false})))

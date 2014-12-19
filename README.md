@@ -1,35 +1,38 @@
 
 # epmon
 
-A barebones Clojure app, which can easily be deployed to Heroku.
-
-This application support the [Getting Started with Clojure](https://devcenter.heroku.com/articles/getting-started-with-clojure) article - check it out.
+Simple app that reports the depth of a Celery redis queue to Librato Metrics once per minute.
 
 ## Running Locally
 
-Make sure you have Clojure installed.  Also, install the [Heroku Toolbelt](https://toolbelt.heroku.com/).
+First set the relevant environmental variables:
+
+$ export LIBRATO_TOKEN=<token>
+$ export LIBRATO_USER=<user>
+$ export REDIS_URI=redis://name:password@server.com:19928
+$ export METRIC_NAME=celery_depth
+$ export QUEUE_NAME=celery
 
 ```sh
-$ git clone https://github.com/heroku/clojure-getting-started.git
-$ cd clojure-getting-started
+$ git clone https://github.com/epantry/epmon.git
+$ cd epmon
 $ lein repl
-user=>(require 'epmon.web)
-user=>(def server (epmon.web/-main))
+user=> (require 'epmon.web)
+user=> (def server (epmon.web/-main))
 ```
 
-Your app should now be running on [localhost:5000](http://localhost:5000/).
+Visiting [localhost:5000](http://localhost:5000/) will simply yield a 404 but you can see the queue length logged on the commandline every minute.
 
-## Deploying to Heroku
+## Deploying
 
-```sh
-$ heroku create
+This is configured as a Heroku app (see the profile). Simply set the corresponding environmental variables you set locally and deploy:
+
+```
+$ heroku config:set LIBRATO_TOKEN=<token>
+$ heroku config:set LIBRATO_USER=<user>
+$ heroku config:set REDIS_URI=redis://name:password@server.com:19928
+$ heroku config:set METRIC_NAME=celery_depth
+$ heroku config:set QUEUE_NAME=celery
+
 $ git push heroku master
-$ heroku open
 ```
-
-## Documentation
-
-For more information about using Clojure on Heroku, see these Dev Center articles:
-
-- [Clojure on Heroku](https://devcenter.heroku.com/categories/clojure)
-
